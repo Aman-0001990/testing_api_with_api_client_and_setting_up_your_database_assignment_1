@@ -33,15 +33,25 @@
 
 
 const express = require('express');
-const { resolve } = require('path');
+const studentData=require('./data.json');
 
 const app = express();
-const port = 3010;
+app.use(express.json());
+const port = 3000;
 
-app.use(express.static('static'));
 
-app.get('/', (req, res) => {
-  res.sendFile(resolve(__dirname, 'pages/index.html'));
+app.post('/students/above-threshold', (req, res) => {
+  const {threshold}=req.body;
+  if(typeof threshold!='number' || threshold<0){
+    return res.status(400).json({error:"'threshold' must be a number and is required"});
+  }
+
+  const filteredStudent = studentData.filter((student)=>student.total>threshold).map((student)=>({
+    name : student.name,
+    total : student.total,
+  }));
+
+  res.json({count : filteredStudent.length, students : filteredStudent})
 });
 
 app.listen(port, () => {
